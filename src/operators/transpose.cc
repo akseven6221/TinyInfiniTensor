@@ -22,20 +22,38 @@ namespace infini
         IT_ASSERT(checkValid(graph));
     }
 
-    optional<vector<Shape>> TransposeObj::inferShape(const TensorVec &inputs)
-    {
-        const auto A = inputs[0];
-        auto input_dim = A->getDims();
-        auto output_dim = input_dim;
-        int rank = A->getRank();
+    optional<vector<Shape>> TransposeObj::inferShape(const TensorVec &inputs) {
+    const auto A = inputs[0];
+    auto input_dim = A->getDims();
+    auto output_dim = input_dim;
+    int rank = A->getRank();
 
-        // =================================== 作业 ===================================
-        // TODO：修改 output_dim，返回正确的 transpose 后的 shape
-        // REF: https://onnx.ai/onnx/operators/onnx__Transpose.html#transpose-21
-        // =================================== 作业 ===================================
+    // 验证permute向量的合法性
+    if (!transposePermute.empty()) {
+        // 1. 检查permute大小是否匹配维度数
+        IT_ASSERT(static_cast<int>(transposePermute.size()) == rank);
+        
+        // 2. 检查permute中的值是否有效（是否在[0, rank-1]范围内且不重复）
+        vector<bool> used(rank, false);
+        for (int i = 0; i < rank; ++i) {
+            IT_ASSERT(transposePermute[i] >= 0 && transposePermute[i] < rank);
+            IT_ASSERT(!used[transposePermute[i]]);
+            used[transposePermute[i]] = true;
+        }
 
-        return std::nullopt;
+        // 3. 根据permute重排维度
+        for (int i = 0; i < rank; ++i) {
+            output_dim[i] = input_dim[transposePermute[i]];
+        }
+    } else {
+        // 如果permute为空，默认反转所有维度
+        for (int i = 0; i < rank; ++i) {
+            output_dim[i] = input_dim[rank - 1 - i];
+        }
     }
+
+    return {{output_dim}};
+}
 
     std::string TransposeObj::toString() const
     {

@@ -33,13 +33,16 @@ namespace infini
         IT_ASSERT(checkValid(graph));
     }
 
-    optional<vector<Shape>> ClipObj::inferShape(const TensorVec &inputs)
-    {
-        // =================================== 作业 ===================================
-        // TODO：返回经过 clip 操作后的 shape
-        // REF: https://onnx.ai/onnx/operators/onnx__Clip.html#clip-13
-        // =================================== 作业 ===================================
-        return std::nullopt;
+    optional<vector<Shape>> ClipObj::inferShape(const TensorVec &inputs) {
+        // 检查输入是否有效
+        IT_ASSERT(inputs.size() == 1);
+        const auto& input = inputs[0];
+        IT_ASSERT(input != nullptr);
+        
+        // Clip 操作不改变输入形状，直接返回输入的形状
+        auto input_shape = input->getDims();
+        
+        return {{input_shape}};  // 返回包含输入形状的 vector
     }
 
     std::string ClipObj::toString() const
@@ -59,23 +62,29 @@ namespace infini
         IT_ASSERT(checkValid(graph));
     }
 
-    vector<DataType> CastObj::inferDataType(const TensorVec &inputs) const
-    {
-        // =================================== 作业 ===================================
-        // TODO：返回经过 cast 操作后, 输出 tensor 的数目和数据类型
-        // REF_FILE: src/core/operator.cc
-        // REF: https://onnx.ai/onnx/operators/onnx__Cast.html#cast-21
-        // =================================== 作业 ===================================
-        return {};
+    vector<DataType> CastObj::inferDataType(const TensorVec &inputs) const {
+        // 检查输入是否有效
+        IT_ASSERT(inputs.size() == 1);
+        const auto& input = inputs[0];
+        IT_ASSERT(input != nullptr);
+
+        // 根据 castType 确定输出的数据类型
+        DataType outputType = getOutputDataType();
+        
+        // Cast 操作只有一个输出
+        return {outputType};
     }
 
-    optional<vector<Shape>> CastObj::inferShape(const TensorVec &inputs)
-    {
-        // =================================== 作业 ===================================
-        // TODO：返回经过 cast 操作后的 shape
-        // REF: https://onnx.ai/onnx/operators/onnx__Cast.html#cast-21
-        // =================================== 作业 ===================================
-        return std::nullopt;
+    optional<vector<Shape>> CastObj::inferShape(const TensorVec &inputs) {
+        // 检查输入是否有效
+        IT_ASSERT(inputs.size() == 1);
+        const auto& input = inputs[0];
+        IT_ASSERT(input != nullptr);
+        
+        // Cast 操作不改变形状，直接返回输入形状
+        auto input_shape = input->getDims();
+        
+        return {{input_shape}};
     }
 
     std::string CastObj::toString() const
